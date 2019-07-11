@@ -6,7 +6,7 @@ In this guide we are going to describe the process of monitoring the [http-api-s
 
 For detailed descriptions visit official documentation of [prometheus-operator](https://github.com/coreos/prometheus-operator/blob/master/Documentation/user-guides/getting-started.md). 
 
-Before deploying prometheus operator, we need to create service account, clusterRole, and clusterRoleBinding. Apply the following command to create:
+Before deploying prometheus operator, we need to create service account, clusterRole, and clusterRoleBinding to give the operator necessary permissions. Apply the following command to create:
 
 ```console
 $ kubectl apply -f example/artifacts/prom-rbac.yaml 
@@ -359,3 +359,115 @@ spec:
 ```
 
 </details>
+
+## Deploy App
+
+Docker image of our [http-web-api](/example/server.go) is available  at kamolhasan/demoapi:v1alpha1. You can deploy it by using the following command:
+
+```console
+$ kubectl apply -f example/artifacts/demo-app.yaml 
+  deployment.apps/demo-server created
+```
+<details>
+<summary>demo-app.yaml</summary>
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-server
+  labels:
+    app: demo-server
+spec:
+  replicas: 3
+  template:
+    metadata:
+      name: demo-server
+      labels:
+        app: demo-server
+    spec:
+      containers:
+        - name: demo-server
+          image: kamolhasan/demoapi:v1alpha1
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+  selector:
+    matchLabels:
+      app: demo-server
+
+```
+
+</details>
+
+Let's deploy a kubernetes service which will communicate with the demo-server's pods.
+
+
+```console
+$ kubectl apply -f example/artifacts/demo-svc.yaml 
+  service/demo-server created
+```
+
+<details>
+<summary>demo-svc.yaml</summary>
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-server
+  labels:
+    app: demo-server
+spec:
+  selector:
+    app: demo-server
+  ports:
+    - port: 8080
+      name: web
+  type: NodePort
+  
+```
+</details>
+
+For checking whether we are receiving the prometheus metrics from api-server let's perform the the following commands:
+
+```console
+$ kubectl port-forward svc/demo-server 8080
+  Forwarding from 127.0.0.1:8080 -> 8080 
+  Forwarding from [::1]:8080 -> 8080
+  
+```
+Change the terminal window and perform
+
+```console
+$ curl http://localhost:8080/
+$ curl -X POST http://localhost:8080/
+$ curl http://localhost:8080/metrics
+# HELP http_request_duration_seconds HTTP request duration distribution
+# TYPE http_request_duration_seconds histogram
+http_request_duration_seconds_bucket{method="GET",le="1"} 1
+http_request_duration_seconds_bucket{method="GET",le="2"} 1
+http_request_duration_seconds_bucket{method="GET",le="5"} 1
+http_request_duration_seconds_bucket{method="GET",le="10"} 1
+http_request_duration_seconds_bucket{method="GET",le="20"} 1
+http_request_duration_seconds_bucket{method="GET",le="60"} 1
+http_request_duration_seconds_bucket{method="GET",le="+Inf"} 1
+http_request_duration_seconds_sum{method="GET"} 2.11e-07
+http_request_duration_seconds_count{method="GET"} 1
+http_request_duration_seconds_bucket{method="Post",le="1"} 1
+http_request_duration_seconds_bucket{method="Post",le="2"} 1
+http_request_duration_seconds_bucket{method="Post",le="5"} 1
+http_request_duration_seconds_bucket{method="Post",le="10"} 1
+http_request_duration_seconds_bucket{method="Post",le="20"} 1
+http_request_duration_seconds_bucket{method="Post",le="60"} 1
+http_request_duration_seconds_bucket{method="Post",le="+Inf"} 1
+http_request_duration_seconds_sum{method="Post"} 1.13e-07
+http_request_duration_seconds_count{method="Post"} 1
+# HELP http_requests_total Count of all http requests
+# TYPE http_requests_total counter
+http_requests_total{code="0",method="GET"} 1
+http_requests_total{code="0",method="Post"} 1
+# HELP version Version information about this binary
+# TYPE version gauge
+version{version="v0.0.1"} 0
+```
+
