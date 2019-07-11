@@ -2,6 +2,7 @@
 
 In this tutorial, we are going to build a simple http api server that exports prometheus metrics at `/metrics` endpoint.
 
+> How to monitor prometheus metrics using Prometheus and Grafana can be found in this [guide](/guide/monitoring-guide.md) 
 
 ## Prometheus Metric Types
 
@@ -252,3 +253,4 @@ func main() {
 
 ```
 
+> How to monitor prometheus metrics using Prometheus and Grafana can be found in this [guide](/guide/monitoring-guide.md) 

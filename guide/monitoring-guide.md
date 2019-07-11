@@ -362,7 +362,7 @@ spec:
 
 ## Deploy App
 
-Docker image of our [http-web-api](/example/server.go) is available  at kamolhasan/demoapi:v1alpha1. You can deploy it by using the following command:
+Docker image of our [http-web-api](/example/server.go) is available  at `kamolhasan/demoapi:v1alpha1`. You can deploy it by using the following command:
 
 ```console
 $ kubectl apply -f example/artifacts/demo-app.yaml 
@@ -471,3 +471,96 @@ http_requests_total{code="0",method="Post"} 1
 version{version="v0.0.1"} 0
 ```
 
+## Monitoring 
+
+Let's consider that you have setup the monitoring environment and deployed an app which can export metrics. If you haven't, complete the previous sections.
+
+Prometheus is needed to be configured to specify a set of targets and parameters describing how to scrape them. Prometheus operator provides [ServiceMonitor](https://github.com/coreos/prometheus-operator/blob/master/Documentation/design.md#servicemonitor) CRD to dynamically configure prometheus by defining how a set of services should be monitored.
+
+```console
+$ kubectl apply -f example/artifacts/demo-app-service-monitor.yaml 
+  servicemonitor.monitoring.coreos.com/demo-server created
+```
+<details>
+<summary>demo-app-service-monitor.yaml</summary>
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: demo-server
+  labels:
+    team: frontend
+spec:
+  selector:
+    matchLabels:
+      app: demo-server
+  endpoints:
+    - port: web
+```
+</details>
+
+Now we need to check whether prometheus has updated its target list. To do so,
+
+```console
+$ kubectl get services
+  NAME                  TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+  demo-server           NodePort    10.107.218.172   <none>        8080:31754/TCP   104m
+  kubernetes            ClusterIP   10.96.0.1        <none>        443/TCP          18h
+  prometheus            NodePort    10.98.95.103     <none>        9090:30900/TCP   17h
+  prometheus-operated   ClusterIP   None             <none>        9090/TCP         17h
+  prometheus-operator   ClusterIP   None             <none>        8080/TCP         18h
+
+$ kubectl port-forward svc/prometheus 9090
+  Forwarding from 127.0.0.1:9090 -> 9090
+  Forwarding from [::1]:9090 -> 9090
+ 
+```
+Now go to http://localhost:9090
+
+![home page](/example/images/prom-home.png)
+
+![targets](/example/images/targets.png)
+
+Here we can see, prometheus has updated its target list and source status is `UP`.
+
+Now we can perform query on the metrics we are collecting from our app.
+
+![query-PromQL](/example/images/query.png)
+
+Prometheus dashboard also provides the facility to represent time series data in a graph.
+
+![graph-Prometheus](/example/images/prom-graph.png)
+
+### Grafana 
+
+We have already deployed grafana while setting-up monitoring environment. Let's check again:
+
+```console
+$ kubectl get pods -l=app=grafana
+  NAME                       READY   STATUS    RESTARTS   AGE
+  grafana-5bd8c6fcf4-l4lzz   1/1     Running   1          20h
+```
+Let's open grafana dashboard by using `kubectl port-forward`. Use username: `admin` and password: `admin` while logging in for the first time.
+
+```console
+$ kubectl port-forward grafana-5bd8c6fcf4-l4lzz 3000
+  Forwarding from 127.0.0.1:3000 -> 3000
+  Forwarding from [::1]:3000 -> 3000
+  Handling connection for 3000
+```
+
+Visit http://localhost:3000
+
+![Grafana-home](/example/images/grafana-home.png)
+
+Now we need to add data source to grafana dashboard. We need to find the prometheus service endpoint where it is exposing its data.
+
+Our prometheus server exposing metrics at `http://prometheus.default.svc:9090` (format: http://service-name.namespace.svc:port) endpoint.
+
+![grafana-data-source](/example/images/data-source-grafana.png)
+
+
+Once data source is added and working successfully we can perform query and show the result onto dashboard.
+
+![graph-grafana](/example/images/graph-grafana.png)
