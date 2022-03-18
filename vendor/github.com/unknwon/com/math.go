@@ -1,4 +1,4 @@
-// Copyright 2016 Unknwon
+// Copyright 2014 com authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License"): you may
 // not use this file except in compliance with the License. You may obtain
@@ -12,23 +12,18 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-package ini
+package com
 
-import (
-	"fmt"
-)
-
-// ErrDelimiterNotFound indicates the error type of no delimiter is found which there should be one.
-type ErrDelimiterNotFound struct {
-	Line string
-}
-
-// IsErrDelimiterNotFound returns true if the given error is an instance of ErrDelimiterNotFound.
-func IsErrDelimiterNotFound(err error) bool {
-	_, ok := err.(ErrDelimiterNotFound)
-	return ok
-}
-
-func (err ErrDelimiterNotFound) Error() string {
-	return fmt.Sprintf("key-value delimiter not found: %s", err.Line)
+// PowInt is int type of math.Pow function.
+func PowInt(x int, y int) int {
+	if y <= 0 {
+		return 1
+	} else {
+		if y%2 == 0 {
+			sqrt := PowInt(x, y/2)
+			return sqrt * sqrt
+		} else {
+			return PowInt(x, y-1) * x
+		}
+	}
 }
