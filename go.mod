@@ -9,7 +9,7 @@ require (
 	github.com/go-macaron/inject v0.0.0-20160627170012-d8a0b8677191 // indirect
 	github.com/go-xorm/xorm v0.7.3
 	github.com/lib/pq v1.1.1
-	github.com/prometheus/client_golang v1.0.0
+	github.com/prometheus/client_golang v1.11.1
 	gopkg.in/ini.v1 v1.42.0 // indirect
 	gopkg.in/macaron.v1 v1.3.2
 	xorm.io/core v0.6.3
