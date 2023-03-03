@@ -78,7 +78,7 @@ func (p Proc) NewStatus() (ProcStatus, error) {
 	}
 	defer f.Close()
 
-	data, err := ioutil.ReadAll(f)
+	data, err := io.ReadAll(f)
 	if err != nil {
 		return ProcStatus{}, err
 	}

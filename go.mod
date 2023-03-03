@@ -8,9 +8,14 @@ require (
 	github.com/go-macaron/binding v0.0.0-20170611065819-ac54ee249c27
 	github.com/go-macaron/inject v0.0.0-20160627170012-d8a0b8677191 // indirect
 	github.com/go-xorm/xorm v0.7.3
+	github.com/json-iterator/go v1.1.12
 	github.com/lib/pq v1.1.1
+	github.com/modern-go/reflect2 v1.0.2
 	github.com/prometheus/client_golang v1.0.0
+	golang.org/x/crypto v0.6.0
+	golang.org/x/net v0.7.0
 	gopkg.in/ini.v1 v1.42.0 // indirect
 	gopkg.in/macaron.v1 v1.3.2
+	kmodules.xyz/resource-metadata v0.15.0
 	xorm.io/core v0.6.3
 )

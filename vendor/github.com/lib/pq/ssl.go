@@ -137,7 +137,7 @@ func sslCertificateAuthority(tlsConf *tls.Config, o values) error {
 	if sslrootcert := o["sslrootcert"]; len(sslrootcert) > 0 {
 		tlsConf.RootCAs = x509.NewCertPool()
 
-		cert, err := ioutil.ReadFile(sslrootcert)
+		cert, err := os.ReadFile(sslrootcert)
 		if err != nil {
 			return err
 		}
