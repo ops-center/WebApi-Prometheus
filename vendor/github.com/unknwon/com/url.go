@@ -1,4 +1,4 @@
-// Copyright 2016 Unknwon
+// Copyright 2013 com authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License"): you may
 // not use this file except in compliance with the License. You may obtain
@@ -12,23 +12,30 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-package ini
+package com
 
 import (
-	"fmt"
+	"encoding/base64"
+	"net/url"
 )
 
-// ErrDelimiterNotFound indicates the error type of no delimiter is found which there should be one.
-type ErrDelimiterNotFound struct {
-	Line string
+// url encode string, is + not %20
+func UrlEncode(str string) string {
+	return url.QueryEscape(str)
 }
 
-// IsErrDelimiterNotFound returns true if the given error is an instance of ErrDelimiterNotFound.
-func IsErrDelimiterNotFound(err error) bool {
-	_, ok := err.(ErrDelimiterNotFound)
-	return ok
+// url decode string
+func UrlDecode(str string) (string, error) {
+	return url.QueryUnescape(str)
 }
 
-func (err ErrDelimiterNotFound) Error() string {
-	return fmt.Sprintf("key-value delimiter not found: %s", err.Line)
+// base64 encode
+func Base64Encode(str string) string {
+	return base64.StdEncoding.EncodeToString([]byte(str))
+}
+
+// base64 decode
+func Base64Decode(str string) (string, error) {
+	s, e := base64.StdEncoding.DecodeString(str)
+	return string(s), e
 }
